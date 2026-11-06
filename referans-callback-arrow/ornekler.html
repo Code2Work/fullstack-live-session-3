@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Referans, Callback, Arrow — Çalıştırılabilir Örnekler</title>
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { background:#0A1210; color:#e6e6e6; font-family:sans-serif; padding:40px 24px; max-width:860px; margin:0 auto; line-height:1.5; }
+  h1 { color:#71D000; font-size:30px; margin-bottom:6px; }
+  .sub { color:#999; margin-bottom:30px; font-size:14px; }
+  .bolum { color:#71D000; font-size:13px; font-weight:bold; letter-spacing:1px; text-transform:uppercase; margin:38px 0 12px; }
+  .ex { background:#0D1517; border:1px solid #223; border-radius:16px; padding:22px 24px; margin-bottom:22px; }
+  .ex h2 { font-size:19px; margin-bottom:6px; }
+  .ex .why { color:#8ab; font-size:14px; margin-bottom:12px; }
+  .ex ul { margin:10px 0 0 20px; font-size:14px; color:#cdd; }
+  .ex li { margin-bottom:4px; }
+  pre { background:#131a1a; border:1px solid #223; border-radius:10px; padding:16px 18px; overflow-x:auto;
+    font-family:'SF Mono','Fira Code',monospace; font-size:13.5px; line-height:1.6; color:#cfe; }
+  .kw{color:#c792ea;} .fn{color:#82aaff;} .str{color:#c3e88d;} .cm{color:#607080;} .num{color:#f78c6c;}
+  .bad{color:#ff6b6b;} .good{color:#71D000;}
+  button { background:#71D000; color:#0A1210; border:none; border-radius:8px; padding:9px 18px; font-weight:bold;
+    font-size:14px; cursor:pointer; margin-top:12px; }
+  button:hover { filter:brightness(1.1); }
+  .out { background:#000; border:1px solid #223; border-radius:8px; margin-top:12px; padding:12px 14px; min-height:20px;
+    font-family:'SF Mono',monospace; font-size:13px; color:#71D000; white-space:pre-wrap; }
+  .out:empty::before { content:"▶ Çalıştır'a bas → çıktı burada"; color:#445; }
+  code { background:#1a2a1a; color:#71D000; padding:1px 6px; border-radius:4px; font-size:12.5px; }
+  table { width:100%; border-collapse:collapse; margin-top:10px; font-size:14px; }
+  td, th { padding:8px 10px; border-bottom:1px solid #223; text-align:left; vertical-align:top; }
+  th { color:#71D000; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  .opt { padding:8px 12px; border-radius:8px; margin-top:6px; font-size:14px; background:#131a1a; border:1px solid #223; }
+  .opt.yanlis { border-color:#5a2a2a; } .opt.dogru { border-color:#2f5a10; }
+  .opt b { display:inline-block; width:22px; }
+</style>
+</head>
+<body>
+  <h1>Referans · Callback · Higher-Order · Arrow</h1>
+  <p class="sub">Her örneği <b>▶ Çalıştır</b> ile çalıştır, çıktıyı gör. Modül 1'den başlayıp modül 2'ye ilerliyoruz.</p>
+
+  <!-- ═════════════ BÖLÜM 1 ═════════════ -->
+  <div class="bolum">Bölüm 1 · Modül 1 — Komplike veri türlerini kopyalamak</div>
+
+  <div class="ex">
+    <h2>1 · Basit veri türü = fotokopi 📄</h2>
+    <p class="why">Sayı, string, boolean kopyalanınca <b>yeni bir kopya</b> oluşur. Kopyayı değiştirmek aslını etkilemez.</p>
+    <pre><span class="kw">let</span> a = <span class="num">5</span>;
+<span class="kw">let</span> b = a;        <span class="cm">// fotokopi çektik</span>
+b = <span class="num">10</span>;           <span class="cm">// kopyanın üstüne yazdık</span>
+
+console.<span class="fn">log</span>(a);   <span class="cm">// ?</span>
+console.<span class="fn">log</span>(b);   <span class="cm">// ?</span></pre>
+    <button onclick="ex1()">▶ Çalıştır</button>
+    <div class="out" id="o1"></div>
+  </div>
+
+  <div class="ex">
+    <h2>2 · Komplike veri türü = aynı deftere ikinci etiket 🏷️</h2>
+    <p class="why">Array ve objelerde <code>=</code> <b>kopya çıkarmaz</b>. Aynı deftere ikinci bir isim etiketi yapıştırır. Defter <b>tek</b>.</p>
+    <pre><span class="kw">const</span> sepet1 = [<span class="str">"elma"</span>];
+<span class="kw">const</span> sepet2 = sepet1;     <span class="cm">// aynı deftere 2. etiket</span>
+sepet2.<span class="fn">push</span>(<span class="str">"armut"</span>);     <span class="cm">// sepet2'ye ekledik...</span>
+
+console.<span class="fn">log</span>(sepet1);        <span class="cm">// ...peki sepet1?</span>
+console.<span class="fn">log</span>(sepet1 === sepet2);</pre>
+    <button onclick="ex2()">▶ Çalıştır</button>
+    <div class="out" id="o2"></div>
+  </div>
+
+  <div class="ex">
+    <h2>3 · Soruyu şık şık test edelim</h2>
+    <p class="why"><i>"Aşağıdakilerden hangisi komplike veri türlerinin kopyalanmasında doğru bir ifadedir?"</i> — her şıkkı yukarıdaki kodla karşılaştır:</p>
+    <div class="opt yanlis"><b>1</b> "Eşittir operatörü ile doğrudan kopyalanabilir." → ❌ <code>=</code> kopyalamıyor, sadece isim veriyor.</div>
+    <div class="opt yanlis"><b>2</b> "Tamamen bağımsız yeni bir kopya oluşturulur." → ❌ Bağımsız olsaydı <code>sepet1</code> değişmezdi. Ama <b>değişti</b>.</div>
+    <div class="opt yanlis"><b>3</b> "Hafızada yeni bir alan ayrılır." → ❌ Yeni alan olsaydı <code>sepet1 === sepet2</code> <b>false</b> çıkardı. <b>true</b> çıktı → ikisi aynı yer.</div>
+    <div class="opt dogru"><b>4</b> "Aslında aynı veriye farklı bir isim atanmış olur." → ✅ Tek defter, iki etiket.</div>
+    <ul>
+      <li>2 ve 3 numaralı şıklar <b>basit</b> veri türleri için doğru (fotokopi). Soru <b>komplike</b> olanları soruyor — tuzak burada.</li>
+    </ul>
+  </div>
+
+  <div class="ex">
+    <h2>4 · Peki gerçekten kopyalamak istersem? → spread <code>...</code></h2>
+    <p class="why">Modül 2'de gördüğümüz spread, elemanları <b>yeni bir array'e</b> döker. Bu sefer gerçekten yeni defter.</p>
+    <pre><span class="kw">const</span> sepet1 = [<span class="str">"elma"</span>];
+<span class="kw">const</span> sepet3 = [...sepet1];   <span class="cm">// YENİ defter, içine elma'yı yazdık</span>
+sepet3.<span class="fn">push</span>(<span class="str">"kiraz"</span>);
+
+console.<span class="fn">log</span>(sepet1);
+console.<span class="fn">log</span>(sepet3);
+console.<span class="fn">log</span>(sepet1 === sepet3);</pre>
+    <button onclick="ex4()">▶ Çalıştır</button>
+    <div class="out" id="o4"></div>
+  </div>
+
+  <!-- ═════════════ BÖLÜM 2 ═════════════ -->
+  <div class="bolum">Bölüm 2 · Fonksiyon bir değerdir → callback</div>
+
+  <div class="ex">
+    <h2>5 · <code>selamla</code> ile <code>selamla()</code> aynı şey değil</h2>
+    <p class="why">Parantezsiz = <b>fonksiyonun kendisi</b> (tarif). Parantezli = <b>şimdi çalıştır</b>, sonucunu ver (yemek).</p>
+    <pre><span class="kw">function</span> <span class="fn">selamla</span>() {
+  <span class="kw">return</span> <span class="str">"Merhaba!"</span>;
+}
+
+console.<span class="fn">log</span>(selamla);     <span class="cm">// tarif</span>
+console.<span class="fn">log</span>(<span class="fn">selamla</span>());   <span class="cm">// yemek</span></pre>
+    <button onclick="ex5()">▶ Çalıştır</button>
+    <div class="out" id="o5"></div>
+  </div>
+
+  <div class="ex">
+    <h2>6 · setTimeout'a tarif ver, yemek verme ⏰</h2>
+    <p class="why"><code>setTimeout</code>'a "2 saniye sonra <b>bunu</b> çalıştır" diyoruz. Ona fonksiyonun <b>kendisini</b> vermeliyiz.</p>
+    <pre><span class="kw">function</span> <span class="fn">zamanDoldu</span>() {
+  console.<span class="fn">log</span>(<span class="str">"Zaman doldu!"</span>);
+}
+
+<span class="fn">setTimeout</span>(zamanDoldu, <span class="num">2000</span>);      <span class="cm">// <span class="good">✅ tarif → 2 sn sonra çalışır</span></span>
+<span class="fn">setTimeout</span>(<span class="fn">zamanDoldu</span>(), <span class="num">2000</span>);    <span class="cm">// <span class="bad">❌ () ile HEMEN çalışır, beklemez</span></span></pre>
+    <button onclick="ex6a()">▶ Doğrusunu çalıştır</button>
+    <button onclick="ex6b()" style="background:#ff6b6b">▶ () ile çalıştır</button>
+    <div class="out" id="o6"></div>
+    <ul>
+      <li><code>zamanDoldu()</code> yazınca JS önce onu <b>hemen</b> çalıştırır, dönen sonucu (<code>undefined</code>) setTimeout'a verir.</li>
+      <li>Arrow ile de yazabilirsin: <code>setTimeout(() =&gt; console.log("Zaman doldu!"), 2000)</code></li>
+    </ul>
+  </div>
+
+  <!-- ═════════════ BÖLÜM 3 ═════════════ -->
+  <div class="bolum">Bölüm 3 · Callback ile Higher-Order fonksiyonun farkı</div>
+
+  <div class="ex">
+    <h2>7 · Aynı satırda iki rol</h2>
+    <p class="why">Bir fonksiyon <b>başka bir fonksiyonu parametre olarak alıyorsa</b> (veya fonksiyon döndürüyorsa) → <b>higher-order</b>. Ona <b>verilen</b> fonksiyon → <b>callback</b>.</p>
+    <pre><span class="kw">const</span> sayilar = [<span class="num">3</span>, <span class="num">5</span>, <span class="num">20</span>, <span class="num">32</span>, <span class="num">9</span>, <span class="num">16</span>];
+
+<span class="kw">function</span> <span class="fn">ondanBuyukMu</span>(sayi) {
+  <span class="kw">return</span> sayi > <span class="num">10</span>;
+}
+
+<span class="kw">const</span> sonuc = sayilar.<span class="fn">filter</span>(ondanBuyukMu);
+<span class="cm">//                   ▲▲▲▲▲▲  ▲▲▲▲▲▲▲▲▲▲▲▲</span>
+<span class="cm">//          higher-order      callback</span>
+<span class="cm">//      (fonksiyon ALAN)      (VERİLEN fonksiyon)</span></pre>
+    <button onclick="ex7()">▶ Çalıştır</button>
+    <div class="out" id="o7"></div>
+    <table>
+      <tr><th>Higher-order (alan)</th><th>Callback (verilen)</th></tr>
+      <tr><td><code>sayilar.filter( ... )</code></td><td><code>ondanBuyukMu</code></td></tr>
+      <tr><td><code>sayilar.map( ... )</code></td><td><code>(m) =&gt; "Favori " + m</code></td></tr>
+      <tr><td><code>sayilar.reduce( ... , 0)</code></td><td><code>(toplam, yeni) =&gt; toplam + yeni</code></td></tr>
+      <tr><td><code>setTimeout( ... , 2000)</code></td><td><code>zamanDoldu</code></td></tr>
+    </table>
+    <ul>
+      <li>Benzetme: <b>kargo firması</b> higher-order, <b>paket</b> callback. Firma paketi alır, zamanı gelince teslim eder (çalıştırır).</li>
+      <li><code>filter</code>, <code>map</code>, <code>reduce</code>, <code>sort</code>, <code>setTimeout</code> → hepsi <b>yüksek dereceli</b> (higher-order) fonksiyon. Çünkü hepsi parametre olarak fonksiyon alıyor.</li>
+    </ul>
+  </div>
+
+  <div class="ex">
+    <h2>8 · Kendi higher-order fonksiyonumuzu yazalım</h2>
+    <p class="why">Özel bir şey değil: parametresi fonksiyon olan herhangi bir fonksiyon.</p>
+    <pre><span class="kw">function</span> <span class="fn">ikiKereYap</span>(islem) {   <span class="cm">// higher-order: fonksiyon alıyor</span>
+  <span class="fn">islem</span>();
+  <span class="fn">islem</span>();
+}
+
+<span class="kw">function</span> <span class="fn">alkis</span>() {             <span class="cm">// callback olarak verilecek</span>
+  console.<span class="fn">log</span>(<span class="str">"👏"</span>);
+}
+
+<span class="fn">ikiKereYap</span>(alkis);               <span class="cm">// tarif veriyoruz, () yok</span></pre>
+    <button onclick="ex8()">▶ Çalıştır</button>
+    <div class="out" id="o8"></div>
+  </div>
+
+  <!-- ═════════════ BÖLÜM 4 ═════════════ -->
+  <div class="bolum">Bölüm 4 · Arrow fonksiyona çevirmek — 3 adım</div>
+
+  <div class="ex">
+    <h2>9 · Klasik → arrow</h2>
+    <p class="why">Her adımda sadece <b>bir</b> şeyi değiştiriyoruz:</p>
+    <pre><span class="cm">// 0) Klasik</span>
+<span class="kw">function</span> <span class="fn">kirktanBuyukMu</span>(sayi) {
+  <span class="kw">return</span> sayi > <span class="num">40</span>;
+}
+
+<span class="cm">// 1) Anonim fonksiyonu bir değişkene ata    → isim  const'tan sonraya taşındı</span>
+<span class="kw">const</span> kirktanBuyukMu2 = <span class="kw">function</span> (sayi) {
+  <span class="kw">return</span> sayi > <span class="num">40</span>;
+};
+
+<span class="cm">// 2) "function" kelimesini sil, parantezden sonra  =>  koy</span>
+<span class="kw">const</span> kirktanBuyukMu2 = (sayi) <span class="kw">=></span> {
+  <span class="kw">return</span> sayi > <span class="num">40</span>;
+};
+
+<span class="cm">// 3) Tek satırsa: { } ve return'ü sil         → otomatik return eder</span>
+<span class="kw">const</span> kirktanBuyukMu2 = (sayi) <span class="kw">=></span> sayi > <span class="num">40</span>;</pre>
+    <button onclick="ex9()">▶ Hepsini test et</button>
+    <div class="out" id="o9"></div>
+  </div>
+
+  <div class="ex">
+    <h2>10 · Arrow yazarken kontrol listesi ✅</h2>
+    <table>
+      <tr><th>Kontrol et</th><th class="bad">Hatalı</th><th class="good">Doğru</th></tr>
+      <tr><td>1. <code>const</code> + isim + <b><code>=</code></b> var mı?</td>
+          <td><code class="bad">const toplama4 (z, w) =&gt; z + w</code></td>
+          <td><code>const toplama4 = (z, w) =&gt; z + w</code></td></tr>
+      <tr><td>2. İstenen <b>isim</b> mi?</td>
+          <td><code class="bad">const toplama = ...</code> <span class="cm">(soru toplama3 istiyor)</span></td>
+          <td><code>const toplama3 = ...</code></td></tr>
+      <tr><td>3. <code>function</code> kelimesi gitti mi?</td>
+          <td><code class="bad">const f = function (x) =&gt; ...</code></td>
+          <td><code>const f = (x) =&gt; ...</code></td></tr>
+      <tr><td>4. <code>{ }</code> varsa <code>return</code> da var mı?</td>
+          <td><code class="bad">(x, y) =&gt; { x + y }</code> <span class="cm">→ undefined</span></td>
+          <td><code>(x, y) =&gt; { return x + y }</code> veya <code>(x, y) =&gt; x + y</code></td></tr>
+    </table>
+    <button onclick="ex10()">▶ 4. maddeyi test et</button>
+    <div class="out" id="o10"></div>
+  </div>
+
+  <!-- ═════════════ BÖLÜM 5 ═════════════ -->
+  <div class="bolum">Bölüm 5 · reduce — hepsini bir araya getirelim</div>
+
+  <div class="ex">
+    <h2>11 · reduce adım adım</h2>
+    <p class="why">reduce, array'i <b>tek bir değere</b> indirger. Her adımda callback'e iki şey verir: şimdiye kadarki <code>toplam</code> ve sıradaki <code>yeni</code> eleman.</p>
+    <pre><span class="kw">const</span> sayilar = [<span class="num">5</span>, <span class="num">3</span>, <span class="num">8</span>, <span class="num">1</span>];
+
+<span class="kw">function</span> <span class="fn">topla</span>(toplam, yeni) {     <span class="cm">// callback</span>
+  <span class="kw">return</span> toplam + yeni;
+}
+
+<span class="kw">const</span> sonuc = sayilar.<span class="fn">reduce</span>(topla, <span class="num">0</span>);   <span class="cm">// reduce = higher-order</span>
+<span class="cm">//                                       ▲ 0 = başlangıç değeri</span>
+
+<span class="cm">// Arrow ile tek satırda aynısı:</span>
+<span class="kw">const</span> sonuc2 = sayilar.<span class="fn">reduce</span>((toplam, yeni) <span class="kw">=></span> toplam + yeni, <span class="num">0</span>);</pre>
+    <button onclick="ex11()">▶ Adım adım çalıştır</button>
+    <div class="out" id="o11"></div>
+  </div>
+
+  <div class="ex">
+    <h2>12 · Pratikteki reduce sorusunu şık şık test edelim</h2>
+    <p class="why"><i>"Aşağıdakilerden hangileri reduce metodunun özelliklerindendir?"</i></p>
+    <div class="opt yanlis"><b>1</b> "Orijinal diziyi değiştirir." → ❌ reduce'tan sonra <code>sayilar</code> aynı kalıyor (aşağıda test ediyoruz).</div>
+    <div class="opt dogru"><b>2</b> "Arraydeki tüm elemanları tek bir değere indirger." → ✅ <code>[5, 3, 8, 1]</code> → <code>17</code></div>
+    <div class="opt yanlis"><b>3</b> "Yalnızca sayıları toplamak için kullanılır." → ❌ String'leri birleştirmek, en büyüğü bulmak için de kullanılır.</div>
+    <div class="opt dogru"><b>4</b> "Yüksek dereceli bir fonksiyondur." → ✅ Parametre olarak bir <b>fonksiyon alıyor</b> (<code>topla</code>). Örnek 7'deki tabloyu hatırla.</div>
+    <pre style="margin-top:14px;"><span class="kw">const</span> sayilar = [<span class="num">5</span>, <span class="num">3</span>, <span class="num">8</span>, <span class="num">1</span>];
+<span class="kw">const</span> toplam = sayilar.<span class="fn">reduce</span>((t, y) <span class="kw">=></span> t + y, <span class="num">0</span>);
+console.<span class="fn">log</span>(sayilar);                   <span class="cm">// şık 1: değişti mi?</span>
+
+<span class="kw">const</span> kelimeler = [<span class="str">"Merhaba"</span>, <span class="str">"dünya"</span>, <span class="str">"!"</span>];
+<span class="kw">const</span> cumle = kelimeler.<span class="fn">reduce</span>((t, y) <span class="kw">=></span> t + <span class="str">" "</span> + y);   <span class="cm">// şık 3: sadece sayı mı?</span>
+
+<span class="kw">const</span> enBuyuk = sayilar.<span class="fn">reduce</span>((t, y) <span class="kw">=></span> (y > t ? y : t));  <span class="cm">// şık 3: toplamaktan başka</span></pre>
+    <button onclick="ex12()">▶ Çalıştır</button>
+    <div class="out" id="o12"></div>
+  </div>
+
+  <div class="ex">
+    <h2>Özet</h2>
+    <ul>
+      <li><b>Basit</b> veri <code>=</code> ile kopyalanır (fotokopi). <b>Array/obje</b> <code>=</code> ile kopyalanmaz, aynı şeye ikinci isim olur (etiket). Gerçek kopya: <code>[...dizi]</code>, <code>{...obje}</code>.</li>
+      <li><code>fonk</code> = tarif, <code>fonk()</code> = şimdi çalıştır. Başka bir fonksiyona <b>verirken</b> parantez koyma.</li>
+      <li><b>Higher-order</b> = fonksiyon <b>alan</b> (filter, map, reduce, setTimeout). <b>Callback</b> = ona <b>verilen</b> fonksiyon.</li>
+      <li>Arrow = <code>const isim = (parametre) =&gt; ...</code> — <code>=</code> işaretini ve ismi unutma.</li>
+      <li><code>reduce</code> = array'i <b>tek değere</b> indiren higher-order fonksiyon. Callback'e <code>(toplam, yeni)</code> verir, orijinal diziyi değiştirmez.</li>
+    </ul>
+  </div>
+
+<script>
+  function yaz(id) {
+    const out = document.getElementById(id);
+    out.textContent = "";
+    return (...a) => { out.textContent += a.map(x => typeof x === "string" ? x : (typeof x === "function" ? x.toString() : JSON.stringify(x))).join(" ") + "\n"; };
+  }
+
+  function ex1() { const log = yaz("o1");
+    let a = 5; let b = a; b = 10;
+    log("a:", a); log("b:", b); log("→ a değişmedi: fotokopi"); }
+
+  function ex2() { const log = yaz("o2");
+    const sepet1 = ["elma"]; const sepet2 = sepet1; sepet2.push("armut");
+    log("sepet1:", sepet1); log("sepet1 === sepet2:", sepet1 === sepet2);
+    log("→ sepet1 de değişti: ikisi AYNI defter"); }
+
+  function ex4() { const log = yaz("o4");
+    const sepet1 = ["elma"]; const sepet3 = [...sepet1]; sepet3.push("kiraz");
+    log("sepet1:", sepet1); log("sepet3:", sepet3); log("sepet1 === sepet3:", sepet1 === sepet3);
+    log("→ sepet1 etkilenmedi: gerçekten yeni defter"); }
+
+  function ex5() { const log = yaz("o5");
+    function selamla() { return "Merhaba!"; }
+    log("selamla   →", selamla); log("selamla() →", selamla()); }
+
+  function ex6a() { const log = yaz("o6");
+    function zamanDoldu() { log("Zaman doldu!  (" + ((Date.now() - t) / 1000).toFixed(1) + " sn)"); }
+    const t = Date.now();
+    log("setTimeout(zamanDoldu, 2000) çağrıldı, bekleniyor...");
+    setTimeout(zamanDoldu, 2000); }
+
+  function ex6b() { const log = yaz("o6");
+    function zamanDoldu() { log("Zaman doldu!  (" + ((Date.now() - t) / 1000).toFixed(1) + " sn)"); }
+    const t = Date.now();
+    log("setTimeout(zamanDoldu(), 2000) çağrıldı...");
+    setTimeout(zamanDoldu(), 2000);
+    log("→ 2 saniye beklemedi! () yüzünden hemen çalıştı."); }
+
+  function ex7() { const log = yaz("o7");
+    const sayilar = [3, 5, 20, 32, 9, 16];
+    function ondanBuyukMu(sayi) { return sayi > 10; }
+    log("filter sonucu:", sayilar.filter(ondanBuyukMu)); }
+
+  function ex8() { const log = yaz("o8");
+    function ikiKereYap(islem) { islem(); islem(); }
+    function alkis() { log("👏"); }
+    ikiKereYap(alkis); }
+
+  function ex9() { const log = yaz("o9");
+    function kirktanBuyukMu(sayi) { return sayi > 40; }
+    const adim1 = function (sayi) { return sayi > 40; };
+    const adim2 = (sayi) => { return sayi > 40; };
+    const adim3 = (sayi) => sayi > 40;
+    [50, 30].forEach(n => log(`n=${n} →  klasik: ${kirktanBuyukMu(n)} | adım1: ${adim1(n)} | adım2: ${adim2(n)} | adım3: ${adim3(n)}`));
+    log("→ dördü de aynı işi yapıyor"); }
+
+  function ex10() { const log = yaz("o10");
+    const yanlis = (x, y) => { x + y };
+    const dogru1 = (x, y) => { return x + y };
+    const dogru2 = (x, y) => x + y;
+    log("{ x + y }        →", String(yanlis(2, 3)));
+    log("{ return x + y } →", dogru1(2, 3));
+    log("x + y            →", dogru2(2, 3)); }
+
+  function ex11() { const log = yaz("o11");
+    const sayilar = [5, 3, 8, 1];
+    let adim = 0;
+    function topla(toplam, yeni) {
+      adim++;
+      log(`${adim}. adım: toplam = ${toplam}, yeni = ${yeni}  →  ${toplam + yeni}`);
+      return toplam + yeni;
+    }
+    const sonuc = sayilar.reduce(topla, 0);
+    log("sonuc:", sonuc);
+    log("sonuc2 (arrow):", sayilar.reduce((toplam, yeni) => toplam + yeni, 0)); }
+
+  function ex12() { const log = yaz("o12");
+    const sayilar = [5, 3, 8, 1];
+    const toplam = sayilar.reduce((t, y) => t + y, 0);
+    log("toplam:", toplam);
+    log("sayilar:", sayilar, " → değişmedi (şık 1 yanlış)");
+    const kelimeler = ["Merhaba", "dünya", "!"];
+    log("cumle:", kelimeler.reduce((t, y) => t + " " + y), " → string ile de çalışır (şık 3 yanlış)");
+    log("enBuyuk:", sayilar.reduce((t, y) => (y > t ? y : t)), " → toplamaktan başka işler de yapar"); }
+</script>
+</body>
+</html>
